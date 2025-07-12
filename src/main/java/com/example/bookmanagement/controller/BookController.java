@@ -15,7 +15,6 @@ import com.example.bookmanagement.entity.Book;
 import com.example.bookmanagement.repository.BookRepository;
 @Controller
 @RequestMapping("/books")
-
 public class BookController {
 	 @Autowired
 	    private final BookRepository bookRepository;
@@ -39,7 +38,15 @@ public class BookController {
 	        model.addAttribute("book", new Book());
 	        return "book-form";
 	    }
-	    @GetMapping("/books/{id}/edit")
+	    // 新規登録フォームからのPOSTを処理
+	    @PostMapping
+	    public String createBook(@ModelAttribute Book book) {
+	        bookRepository.save(book);
+	        return "redirect:/books";
+	    }
+
+	    
+	    @GetMapping("/{id}/edit")
 	    public String editBookForm(@PathVariable Long id, Model model) {
 	        Book book = bookRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid book ID:" + id));
 	        model.addAttribute("book", book);
@@ -47,7 +54,7 @@ public class BookController {
 	    }
 	    // 編集された本の保存
 	    @PostMapping("/{id}")
-	    public String saveBook(@PathVariable Long id, @ModelAttribute Book book) {
+	    public String saveEditBook(@PathVariable Long id, @ModelAttribute Book book) {
 	        book.setId(id); // IDを設定
 	        bookRepository.save(book);
 	        return "redirect:/books"; // 編集後は一覧ページにリダイレクト
@@ -59,14 +66,14 @@ public class BookController {
 	        bookRepository.save(book);
 	        return "redirect:/books";
 	    }
-	    @PostMapping("/books/update/{id}")
+	    @PostMapping("/update/{id}")
 	    public String updateBook(@PathVariable Long id, @ModelAttribute Book book) {
 	        book.setId(id); // 上書き
 	        bookRepository.save(book);
 	        return "redirect:/books";
 	    }
 
-	    @GetMapping("/books/delete/{id}")
+	    @GetMapping("/delete/{id}")
 	    public String deleteBook(@PathVariable Long id) {
 	        bookRepository.deleteById(id);
 	        return "redirect:/books";

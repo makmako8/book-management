@@ -10,23 +10,25 @@
 <div class="container">
     <h1 class="my-4">Edit Book</h1>
     <form action="#" th:action="@{/books/{id}(id=${book.id})}" th:object="${book}" method="post">
-        <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" id="title" th:field="*{title}" class="form-control">
-        </div>
-        <div class="form-group">
-            <label for="author">Author</label>
-            <input type="text" id="author" th:field="*{author}" class="form-control">
-        </div>
-        <div class="form-group">
-            <label for="genre">Genre</label>
-            <input type="text" id="genre" th:field="*{genre}" class="form-control">
-        </div>
-        <div class="form-group">
-            <label for="memo">Memo</label>
-            <input type="text" id="memo" th:field="*{memo}" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-primary">Save</button>
+      <div>
+        <label for="title">タイトル：</label>
+        <input type="text" id="title" th:field="*{title}" placeholder="タイトルを入力">
+    </div>
+
+    <!-- 著者表示 -->
+    <div>
+        <label for="author">著者：</label>
+        <input type="text" id="author" th:field="*{author}" placeholder="著者を入力">
+    </div>
+
+    <!-- ISBN表示（あれば） -->
+    <div>
+        <label for="isbn">ISBN：</label>
+        <input type="text" id="isbn" th:field="*{isbn}" placeholder="ISBNを入力">
+    </div>
+
+    <!-- 保存ボタン -->
+    <button type="submit">保存</button>
     </form>
 </div>
 </body>

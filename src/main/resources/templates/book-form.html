@@ -9,25 +9,12 @@
 <body>
 <div class="container">
     <h1 class="my-4">Add New Book</h1>
-    <form action="/books/save" method="post">
-        <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="author">Author</label>
-            <input type="text" id="author" name="author" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="genre">Genre</label>
-            <input type="text" id="genre" name="genre" class="form-control">
-        </div>
-        <div class="form-group">
-            <label for="memo">Memo</label>
-            <textarea id="memo" name="memo" class="form-control"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Save Book</button>
-    </form>
+<form th:action="@{${book.id} != null ? '/books/' + ${book.id} : '/books'}"
+      th:object="${book}" method="post">
+    <input type="text" th:field="*{title}" placeholder="タイトル">
+    <input type="text" th:field="*{author}" placeholder="著者">
+    <button type="submit">保存</button>
+</form>
 </div>
 </body>
 </html>
