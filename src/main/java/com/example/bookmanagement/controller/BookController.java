@@ -96,7 +96,15 @@ public class BookController {
 	        bookRepository.save(book);
 	        return "redirect:/books"; // 編集後は一覧ページにリダイレクト
 	    }
+	 // 書籍詳細画面表示
+	    @GetMapping("/{id}")
+	    public String bookDetail(@PathVariable Long id, Model model) {
+	        Book book = bookRepository.findById(id)
+	            .orElseThrow(() -> new IllegalArgumentException("Invalid book ID:" + id));
 
+	        model.addAttribute("book", book);
+	        return "book-detail";
+	    }
 	    // 書籍の保存処理
 	    @PostMapping("/save")
 	    public String saveBook(@ModelAttribute Book book) {

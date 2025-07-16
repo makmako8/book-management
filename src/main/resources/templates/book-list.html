@@ -30,11 +30,16 @@
         </tr>
         </thead>
         <tbody>
-			    <tr th:if="${books.size() == 0}">
-        <td colspan="6">該当する本がありません。</td>
+			    
+    <tr th:if="${books.size() == 0}">
+        <td colspan="7">該当する本がありません。</td>
     </tr>
-        <tr th:each="book : ${books}">
+        <tr th:each="book : ${bookPage.content}">
             <td th:text="${book.id}"></td>
+        <td>
+            <!-- タイトルに詳細ページへのリンク追加 -->
+            <a th:href="@{/books/{id}(id=${book.id})}" th:text="${book.title}"></a>
+        </td>
             <td th:text="${book.title}"></td>
             <td th:text="${book.author}"></td>
             <td th:text="${book.genre}"></td>
