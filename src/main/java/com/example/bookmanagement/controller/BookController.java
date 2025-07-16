@@ -73,9 +73,13 @@ public class BookController {
 	        return "redirect:/books";
 	    }
 
-	    @GetMapping("/delete/{id}")
+	 // 本の削除処理
+	    @GetMapping("/{id}/delete")
 	    public String deleteBook(@PathVariable Long id) {
-	        bookRepository.deleteById(id);
+	        Book book = bookRepository.findById(id)
+	            .orElseThrow(() -> new IllegalArgumentException("Invalid book ID:" + id));
+
+	        bookRepository.delete(book);
 	        return "redirect:/books";
 	    }
 
