@@ -13,6 +13,8 @@
       th:object="${book}" method="post">
     <input type="text" th:field="*{title}" placeholder="タイトル">
     <input type="text" th:field="*{author}" placeholder="著者">
+    <input type="text" th:field="*{genre}" placeholder="ジャンル">
+    <textarea id="memo" th:field="*{memo}">メモ</textarea>
     <button type="submit">保存</button>
 </form>
 </div>

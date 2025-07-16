@@ -26,9 +26,20 @@
         <label for="isbn">ISBN：</label>
         <input type="text" id="isbn" th:field="*{isbn}" placeholder="ISBNを入力">
     </div>
+    <!-- Genre (ジャンル) -->
+    <div>
+        <label for="genre">ジャンル：</label>
+        <input type="text" id="genre" th:field="*{genre}" placeholder="ジャンルを入力">
+    </div>
+
+    <!-- Memo (メモ) -->
+    <div>
+        <label for="memo">メモ：</label>
+        <textarea id="memo" th:field="*{memo}" placeholder="メモを入力"></textarea>
+    </div>
 
     <!-- 保存ボタン -->
-    <button type="submit">保存</button>
+    <button type="submit"></button>
     </form>
 </div>
 </body>
