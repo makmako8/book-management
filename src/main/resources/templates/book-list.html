@@ -10,6 +10,13 @@
 <div class="container">
     <h1 class="my-4">Book List</h1>
     <a href="/books/new" class="btn btn-primary mb-3">Add New Book</a>
+   <form th:action="@{/books}" method="get">
+    <input type="text" name="title" placeholder="タイトルで検索" th:value="${title}">
+    <input type="text" name="genre" placeholder="ジャンルで検索" th:value="${genre}">
+    <input type="text" name="author" placeholder="著者名で検索" th:value="${author}">
+    <button type="submit">検索</button>
+    <a th:href="@{/books}">リセット</a>
+   </form>
     <table class="table">
         <thead>
         <tr>
@@ -18,10 +25,14 @@
             <th>Author</th>
             <th>Genre</th>
             <th>Memo</th>
-            <th></th>
+            <th>Edit</th>
+            <th>Delete</th>
         </tr>
         </thead>
         <tbody>
+			    <tr th:if="${books.size() == 0}">
+        <td colspan="6">該当する本がありません。</td>
+    </tr>
         <tr th:each="book : ${books}">
             <td th:text="${book.id}"></td>
             <td th:text="${book.title}"></td>
@@ -29,8 +40,8 @@
             <td th:text="${book.genre}"></td>
             <td th:text="${book.memo}"></td>
             <td>
-    <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i>Edit</a>
-    <a th:href="@{/books/{id}/delete(id=${book.id})}" class="btn btn-sm btn-danger"
+    <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i>Edit</a></td>
+     <td><a th:href="@{/books/{id}/delete(id=${book.id})}" class="btn btn-sm btn-danger"
        onclick="return confirm('本当に削除しますか？')">Delete</a>
 </td>
         </tr>

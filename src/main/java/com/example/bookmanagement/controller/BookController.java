@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.bookmanagement.entity.Book;
 import com.example.bookmanagement.repository.BookRepository;
@@ -26,11 +27,43 @@ public class BookController {
 
 	    // 書籍一覧表示
 	    @GetMapping
-	    public String listBooks(Model model) {
-	        List<Book> books = bookRepository.findAll();
+	    public String listBooks(@RequestParam(value = "title", required = false) String title,
+	                            @RequestParam(value = "genre", required = false) String genre,
+	                            @RequestParam(value = "author", required = false) String author,
+	                            Model model) {
+
+	        List<Book> books;
+
+
+	        boolean hasTitle = title != null && !title.isEmpty();
+	        boolean hasGenre = genre != null && !genre.isEmpty();
+	        boolean hasAuthor = author != null && !author.isEmpty();
+
+	        if (!hasTitle && !hasGenre && !hasAuthor) {
+	            books = bookRepository.findAll();
+	        } else if (hasTitle && !hasGenre && !hasAuthor) {
+	            books = bookRepository.findByTitleContainingIgnoreCase(title);
+	        } else if (!hasTitle && hasGenre && !hasAuthor) {
+	            books = bookRepository.findByGenreContainingIgnoreCase(genre);
+	        } else if (!hasTitle && !hasGenre && hasAuthor) {
+	            books = bookRepository.findByAuthorContainingIgnoreCase(author);
+	        } else if (hasTitle && hasGenre && !hasAuthor) {
+	            books = bookRepository.findByTitleContainingIgnoreCaseAndGenreContainingIgnoreCase(title, genre);
+	        } else if (hasTitle && !hasGenre && hasAuthor) {
+	            books = bookRepository.findByTitleContainingIgnoreCaseAndAuthorContainingIgnoreCase(title, author);
+	        } else if (!hasTitle && hasGenre && hasAuthor) {
+	            books = bookRepository.findByGenreContainingIgnoreCaseAndAuthorContainingIgnoreCase(genre, author);
+	        } else {
+	            books = bookRepository.findByTitleContainingIgnoreCaseAndGenreContainingIgnoreCaseAndAuthorContainingIgnoreCase(title, genre, author);
+	        }
+
 	        model.addAttribute("books", books);
+	        model.addAttribute("title", title);
+	        model.addAttribute("genre", genre);
+
 	        return "book-list";
 	    }
+
 
 	    // 新規登録フォームの表示
 	    @GetMapping("/new")
