@@ -2,6 +2,8 @@ package com.example.bookmanagement.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,5 +23,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByGenreContainingIgnoreCaseAndAuthorContainingIgnoreCase(String genre, String author);
     // タイトル・ジャンル・著者の全てを含む検索
     List<Book> findByTitleContainingIgnoreCaseAndGenreContainingIgnoreCaseAndAuthorContainingIgnoreCase(String title, String genre, String author);
+    Page<Book> findAll(Pageable pageable);
+
 
 }

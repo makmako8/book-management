@@ -3,6 +3,8 @@ package com.example.bookmanagement.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,13 +29,14 @@ public class BookController {
 
 	    // 書籍一覧表示
 	    @GetMapping
-	    public String listBooks(@RequestParam(value = "title", required = false) String title,
+	    public String listBooks(@RequestParam(defaultValue = "0") int page, 
+	    						@RequestParam(value = "title", required = false) String title,
 	                            @RequestParam(value = "genre", required = false) String genre,
 	                            @RequestParam(value = "author", required = false) String author,
 	                            Model model) {
 
 	        List<Book> books;
-
+	        Page<Book> bookPage = bookRepository.findAll(PageRequest.of(page, 10)); // 10件ずつ表示
 
 	        boolean hasTitle = title != null && !title.isEmpty();
 	        boolean hasGenre = genre != null && !genre.isEmpty();
@@ -56,7 +59,8 @@ public class BookController {
 	        } else {
 	            books = bookRepository.findByTitleContainingIgnoreCaseAndGenreContainingIgnoreCaseAndAuthorContainingIgnoreCase(title, genre, author);
 	        }
-
+	        
+	        model.addAttribute("bookPage", bookPage);
 	        model.addAttribute("books", books);
 	        model.addAttribute("title", title);
 	        model.addAttribute("genre", genre);

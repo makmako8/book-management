@@ -47,6 +47,22 @@
         </tr>
         </tbody>
     </table>
+
 </div>
+    <div>
+    <span th:text="'現在 ' + ${bookPage.number + 1} + ' ページ / 全 ' + ${bookPage.totalPages} + ' ページ'"></span>
+</div>
+
+<div>
+    <a th:if="${bookPage.hasPrevious()}" th:href="@{/books(page=${bookPage.number - 1})}">前のページ</a>
+
+    <span th:each="i : ${#numbers.sequence(0, bookPage.totalPages - 1)}">
+        <a th:href="@{/books(page=${i})}" th:text="${i + 1}" th:classappend="${i == bookPage.number} ? 'current-page' : ''"></a>
+    </span>
+
+    <a th:if="${bookPage.hasNext()}" th:href="@{/books(page=${bookPage.number + 1})}">次のページ</a>
+</div>
+
+<br>
 </body>
 </html>
