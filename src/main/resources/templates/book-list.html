@@ -10,6 +10,8 @@
 <div class="container">
     <h1 class="my-4">Book List</h1>
     <a href="/books/new" class="btn btn-primary mb-3">Add New Book</a>
+   <!-- CSVエクスポートリンクを追加 -->
+<a th:href="@{/books/export/csv}" class="btn btn-sm btn-primary">CSVエクスポート</a>
    <form th:action="@{/books}" method="get">
     <input type="text" name="title" placeholder="タイトルで検索" th:value="${title}">
     <input type="text" name="genre" placeholder="ジャンルで検索" th:value="${genre}">

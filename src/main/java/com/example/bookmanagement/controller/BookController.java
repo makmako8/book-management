@@ -1,5 +1,5 @@
 package com.example.bookmanagement.controller;
-
+import java.io.PrintWriter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.bookmanagement.entity.Book;
 import com.example.bookmanagement.repository.BookRepository;
+
+import jakarta.servlet.http.HttpServletResponse;
 @Controller
 @RequestMapping("/books")
 public class BookController {
@@ -127,6 +129,39 @@ public class BookController {
 	        bookRepository.delete(book);
 	        return "redirect:/books";
 	    }
+	 // CSVダウンロード処理
+	    @GetMapping("/export/csv")
+	    public void exportToCSV(HttpServletResponse response) {
+	        try {
+	            // ファイル名の指定
+	            response.setContentType("text/csv; charset=UTF-8");
+	            response.setHeader("Content-Disposition", "attachment; filename=\"books.csv\"");
 
+	            // CSVファイルに書き込み
+	            PrintWriter writer = response.getWriter();
+
+	            // CSVヘッダー
+	            writer.println("ID,タイトル,著者,ジャンル,メモ");
+
+	            // 書籍データ取得（全件）
+	            List<Book> books = bookRepository.findAll();
+
+	            // CSVデータ出力
+	            for (Book book : books) {
+	                writer.printf("%d,%s,%s,%s,%s%n",
+	                    book.getId(),
+	                    book.getTitle(),
+	                    book.getAuthor(),
+	                    book.getGenre(),
+	                    book.getMemo().replace("\n", " ").replace(",", " "));
+	            }
+
+	            writer.flush();
+	            writer.close();
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }      
 
 }
