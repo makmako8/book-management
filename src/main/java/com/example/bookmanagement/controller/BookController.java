@@ -1,10 +1,12 @@
 package com.example.bookmanagement.controller;
 import java.io.PrintWriter;
+import java.security.Principal;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,60 +17,67 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.bookmanagement.entity.Book;
+import com.example.bookmanagement.entity.User;
 import com.example.bookmanagement.repository.BookRepository;
+import com.example.bookmanagement.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletResponse;
 @Controller
 @RequestMapping("/books")
 public class BookController {
-	 @Autowired
-	    private final BookRepository bookRepository;
+	
+	private final BookRepository bookRepository;
+    private final UserRepository userRepository;
 
-	    public BookController(BookRepository bookRepository) {
-	        this.bookRepository = bookRepository;
-	    }
-
-
+    public BookController(BookRepository bookRepository, UserRepository userRepository) {
+        this.bookRepository = bookRepository;
+        this.userRepository = userRepository;
+    }
+    private User currentUser(Principal principal) {
+        return userRepository.findByUsername(principal.getName());
+    }
 	    // 書籍一覧表示
-	    @GetMapping
-	    public String listBooks(@RequestParam(defaultValue = "0") int page, 
-	    						@RequestParam(value = "title", required = false) String title,
-	                            @RequestParam(value = "genre", required = false) String genre,
-	                            @RequestParam(value = "author", required = false) String author,
-	                            Model model) {
+    @GetMapping
+    public String listBooks(@RequestParam(defaultValue = "0") int page,
+                            @RequestParam(value="title", required=false) String title,
+                            @RequestParam(value="genre", required=false) String genre,
+                            @RequestParam(value="author", required=false) String author,
+                            Model model, Principal principal) {
 
-	        List<Book> books;
-	        Page<Book> bookPage = bookRepository.findAll(PageRequest.of(page, 10)); // 10件ずつ表示
+        User user = currentUser(principal);
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("id").descending());
 
-	        boolean hasTitle = title != null && !title.isEmpty();
-	        boolean hasGenre = genre != null && !genre.isEmpty();
-	        boolean hasAuthor = author != null && !author.isEmpty();
+        Page<Book> bookPage;
+        boolean hasTitle = title != null && !title.isBlank();
+        boolean hasGenre  = genre != null && !genre.isBlank();
+        boolean hasAuthor = author != null && !author.isBlank();
 
-	        if (!hasTitle && !hasGenre && !hasAuthor) {
-	            books = bookRepository.findAll();
-	        } else if (hasTitle && !hasGenre && !hasAuthor) {
-	            books = bookRepository.findByTitleContainingIgnoreCase(title);
-	        } else if (!hasTitle && hasGenre && !hasAuthor) {
-	            books = bookRepository.findByGenreContainingIgnoreCase(genre);
-	        } else if (!hasTitle && !hasGenre && hasAuthor) {
-	            books = bookRepository.findByAuthorContainingIgnoreCase(author);
-	        } else if (hasTitle && hasGenre && !hasAuthor) {
-	            books = bookRepository.findByTitleContainingIgnoreCaseAndGenreContainingIgnoreCase(title, genre);
-	        } else if (hasTitle && !hasGenre && hasAuthor) {
-	            books = bookRepository.findByTitleContainingIgnoreCaseAndAuthorContainingIgnoreCase(title, author);
-	        } else if (!hasTitle && hasGenre && hasAuthor) {
-	            books = bookRepository.findByGenreContainingIgnoreCaseAndAuthorContainingIgnoreCase(genre, author);
-	        } else {
-	            books = bookRepository.findByTitleContainingIgnoreCaseAndGenreContainingIgnoreCaseAndAuthorContainingIgnoreCase(title, genre, author);
-	        }
-	        
-	        model.addAttribute("bookPage", bookPage);
-	        model.addAttribute("books", books);
-	        model.addAttribute("title", title);
-	        model.addAttribute("genre", genre);
+        if (!hasTitle && !hasGenre && !hasAuthor) {
+            bookPage = bookRepository.findByUser(user, pageable);
+        } else if (hasTitle && !hasGenre && !hasAuthor) {
+            bookPage = bookRepository.findByUserAndTitleContainingIgnoreCase(user, title, pageable);
+        } else if (!hasTitle && hasGenre && !hasAuthor) {
+            bookPage = bookRepository.findByUserAndGenreContainingIgnoreCase(user, genre, pageable);
+        } else if (!hasTitle && !hasGenre && hasAuthor) {
+            bookPage = bookRepository.findByUserAndAuthorContainingIgnoreCase(user, author, pageable);
+        } else {
+            // タイトル・ジャンル・著者すべてのAND検索（必要な場合）
+            bookPage = bookRepository
+                .findByUserAndTitleContainingIgnoreCaseAndGenreContainingIgnoreCaseAndAuthorContainingIgnoreCase(
+                    user,
+                    hasTitle ? title : "",
+                    hasGenre ? genre : "",
+                    hasAuthor ? author : "",
+                    pageable
+                );
+        }
 
-	        return "book-list";
-	    }
+        model.addAttribute("bookPage", bookPage);
+        model.addAttribute("title", title);
+        model.addAttribute("genre", genre);
+        model.addAttribute("author", author);
+        return "book-list";
+    } 
 
 
 	    // 新規登録フォームの表示
@@ -77,20 +86,28 @@ public class BookController {
 	        model.addAttribute("book", new Book());
 	        return "book-form";
 	    }
-	    // 新規登録フォームからのPOSTを処理
+	    
 	    @PostMapping
-	    public String createBook(@ModelAttribute Book book) {
+	    public String createBook(@ModelAttribute Book book, Principal principal) {
+	        book.setUser(currentUser(principal)); // 所有者をセット
 	        bookRepository.save(book);
 	        return "redirect:/books";
 	    }
 
+
 	    
 	    @GetMapping("/{id}/edit")
-	    public String editBookForm(@PathVariable Long id, Model model) {
-	        Book book = bookRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid book ID:" + id));
+	    public String editBookForm(@PathVariable Long id, Model model, Principal principal) {
+	        Book book = bookRepository.findById(id)
+	            .orElseThrow(() -> new IllegalArgumentException("Invalid book ID:" + id));
+	        // 所有者チェック
+	        if (!book.getUser().getUsername().equals(principal.getName())) {
+	            throw new IllegalArgumentException("あなたの本ではありません");
+	        }
 	        model.addAttribute("book", book);
-	        return "book-form"; // 新規登録と同じフォームを使い回せる！
+	        return "book-edit";
 	    }
+
 	    // 編集された本の保存
 	    @PostMapping("/{id}")
 	    public String saveEditBook(@PathVariable Long id, @ModelAttribute Book book) {
@@ -100,10 +117,12 @@ public class BookController {
 	    }
 	 // 書籍詳細画面表示
 	    @GetMapping("/{id}")
-	    public String bookDetail(@PathVariable Long id, Model model) {
+	    public String detail(@PathVariable Long id, Model model, Principal principal) {
 	        Book book = bookRepository.findById(id)
 	            .orElseThrow(() -> new IllegalArgumentException("Invalid book ID:" + id));
-
+	        if (!book.getUser().getUsername().equals(principal.getName())) {
+	            throw new IllegalArgumentException("あなたの本ではありません");
+	        }
 	        model.addAttribute("book", book);
 	        return "book-detail";
 	    }
@@ -122,10 +141,12 @@ public class BookController {
 
 	 // 本の削除処理
 	    @GetMapping("/{id}/delete")
-	    public String deleteBook(@PathVariable Long id) {
+	    public String deleteBook(@PathVariable Long id, Principal principal) {
 	        Book book = bookRepository.findById(id)
 	            .orElseThrow(() -> new IllegalArgumentException("Invalid book ID:" + id));
-
+	        if (!book.getUser().getUsername().equals(principal.getName())) {
+	            throw new IllegalArgumentException("あなたの本ではありません");
+	        }
 	        bookRepository.delete(book);
 	        return "redirect:/books";
 	    }

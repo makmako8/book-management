@@ -4,15 +4,24 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 @Entity
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String username;
+    private String password;
     private String title;
     private String author;
     private String genre;
+    
+    
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
     
     @Column(columnDefinition = "TEXT")
     private String memo;
@@ -49,6 +58,14 @@ public class Book {
         this.genre = genre;
     }
 
+    
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
     public String getMemo() {
         return memo;
     }
